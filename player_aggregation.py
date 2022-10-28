@@ -2,7 +2,7 @@ import faust
 
 kafka_brokers = ['86.119.35.55:9092']
 
-app = faust.App('test-app', broker=kafka_brokers)
+app = faust.App('player-aggregation-app', broker=kafka_brokers)
 
 
 class PlayerPosition(faust.Record, validation=True, serializer='json'):
@@ -18,7 +18,7 @@ rawPlayerPositionTopic = app.topic('rawInputTopic', value_type=PlayerPosition)
 playerPositionGroupedTopic = app.topic('playerPositionGroupedByTime')
 
 
-new_row = {
+new_msg = {
     "time": 0,
     "teams": {
         "team_0": {
@@ -36,14 +36,13 @@ new_row = {
 
 @app.agent(rawPlayerPositionTopic)
 async def process(positions):
-    global new_row
+    global new_msg
     async for position in positions:
-        if position.time != new_row["time"]:
-            print(new_row)
-            await playerPositionGroupedTopic.send(value=new_row)
-            new_row = {"time":position.time, "teams":{"team_0":{},"team_1":{}}}
+        if position.time != new_msg["time"]:
+            await playerPositionGroupedTopic.send(value=new_msg)
+            new_msg = {"time":position.time, "teams":{"team_0":{},"team_1":{}}}
 
-        new_row["teams"]["team_"+str(position.team)][str(position.number)] = {"x":position.x, "y":position.y}
+        new_msg["teams"]["team_"+str(position.team)][str(position.number)] = {"x":position.x, "y":position.y}
 
 
 app.main()
