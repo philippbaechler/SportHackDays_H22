@@ -6,7 +6,7 @@ pip install faust
 
 Execute python script with following command:
 ```
-~/venv/sport_hack/bin/python3 test_faust_worker.py worker -l info
+~/venv/sport_hack/bin/python3 test_faust_worker.py worker -l info --web-port=6066
 ```
 
 
@@ -29,4 +29,9 @@ worker
 Print informations:
 ```
 -l info
+```
+
+Set a unique port for each new worker:
+```
+--web-port=6066
 ```
