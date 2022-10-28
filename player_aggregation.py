@@ -14,10 +14,24 @@ class PlayerPosition(faust.Record, validation=True, serializer='json'):
     EventTimestamp: int
 
 
-rawPlayerPositionTopic = app.topic('testTopic', value_type=PlayerPosition)
+rawPlayerPositionTopic = app.topic('rawInputTopic', value_type=PlayerPosition)
+playerPositionGroupedTopic = app.topic('playerPositionGroupedByTime')
 
 
-new_row = {"time":0}
+new_row = {
+    "time": 0,
+    "teams": {
+        "team_0": {
+            # "24": {"x": 2, "y":4},
+            # "8": {"x": 1, "y":5},
+            # "64": {"x": 1, "y":5}
+        },
+        "team_1": {
+            # "30": {"x": 2, "y":4},
+            # "8": {"x": 1, "y":5}
+        }
+    }
+}
 
 
 @app.agent(rawPlayerPositionTopic)
@@ -26,10 +40,12 @@ async def process(positions):
     async for position in positions:
         if position.time != new_row["time"]:
             print(new_row)
-            new_row = {"time": position.time}
-        
-        player_id = str(position.team) + "_" + str(position.number)
-        new_row[player_id] = {"x":{position.x}, "y":{position.y}}
+            await playerPositionGroupedTopic.send(value=new_row)
+            new_row = {"time":position.time, "teams":{"team_0":{},"team_1":{}}}
+
+        new_row["teams"]["team_"+str(position.team)][str(position.number)] = {"x":position.x, "y":position.y}
 
 
 app.main()
+
+
