@@ -19,7 +19,7 @@ df_player.head()
 df_ball.head()
 
 # %%
-df_player.to_csv("player_data_pp_P1.csv")
-df_player.to_csv("object_data_pp_P1.csv")
+df_player.to_csv("player_data_pp_P1.csv", index=False)
+df_ball.to_csv("object_data_pp_P1.csv", index=False)
 
 # %%

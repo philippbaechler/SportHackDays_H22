@@ -42,7 +42,7 @@ The timestamps had to be adjusted to a format like **2022-08-21 10:30:43.595+010
 
 Copy data to server:
 ```
-scp ownCloud/SHD_Sport_Hackdays/object_data_pp_P1.csv -i .ssh/hslukey.sec ubuntu@86.119.35.55:/home/ubuntu/hslu-dataplatform/data-transfer/hack-days-data/
+scp -i .ssh/hslukey.sec projects/SportHackDays_H22/object_data_pp_P1.csv ubuntu@86.119.35.55:/home/ubuntu/hslu-dataplatform/data-transfer/hack-days-data/
 ```
 
 ### Create and visualize Stream
