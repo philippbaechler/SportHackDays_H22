@@ -25,10 +25,12 @@ async def process(positions):
         dx = float(position["x"])-float(last_position["x"])
         dy = float(position["y"])-float(last_position["y"])
         distance_m = math.sqrt(dx**2 + dy**2)
+
         current_time = datetime.strptime(position["time"], '%Y-%m-%d %H:%M:%S.%f%z')
         last_time = datetime.strptime(last_position["time"], '%Y-%m-%d %H:%M:%S.%f%z')
         time_passed = current_time-last_time
         time_passed_s = time_passed.microseconds/10**6
+        
         velocity_m_per_s = round(distance_m / time_passed_s, 2)
         direction_deg = 0
         if dx != 0:
