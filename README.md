@@ -65,10 +65,31 @@ CREATE STREAM IF NOT EXISTS centerOfGravity_s
         value_format='JSON');
 ```
 
-
 ```
 SELECT * FROM centerOfGravity_s EMIT CHANGES;
 ```
 
+
+### Start / Stop StreamSets Simulator from Commandline
+
+1. On VM -> start bash in Streamset docker:
+```
+docker exec -it streamsets-1 bash
+```
+
+2. Insinde VM/StreamSetDocker -> Go to $SDC_DIST directory
+```
+cd /opt/streamsets-datacollector-3.22.2/
+```
+
+3. Start StreamSet Simulator
+```
+bin/streamsets cli -U http://localhost:18630 manager start -n Test55284d1b-15b1-4ed1-ad03-3097232af022
+```
+
+4. Stop StreamSet Simulator
+```
+bin/streamsets cli -U http://localhost:18630 manager stop -n Test55284d1b-15b1-4ed1-ad03-3097232af022
+```
 
 
