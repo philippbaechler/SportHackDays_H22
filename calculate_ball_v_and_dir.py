@@ -7,7 +7,7 @@ kafka_brokers = ['86.119.35.55:9092']
 app = faust.App('ball-v-and-dir-app', broker=kafka_brokers)
 
 
-ballPositionTopic = app.topic('rawInputBallTopic')
+ballPositionTopic = app.topic('filteredInputBallTopic')
 ballSpeedAndDirectionTopic = app.topic('ballSpeedAndDirection')
 
 
@@ -31,7 +31,8 @@ async def process(positions):
         time_passed = current_time-last_time
         time_passed_s = time_passed.microseconds/10**6
         
-        velocity_m_per_s = round(distance_m / time_passed_s, 2)
+        velocity_m_per_s = round(distance_m / time_passed_s, 2) if time_passed_s else 0
+            
         direction_deg = 0
         if dx != 0:
             direction_deg = round(math.degrees(math.atan(dy/dx)), 2)
