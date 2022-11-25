@@ -17,6 +17,24 @@ last_position = {
     "y": 0,
 }
 
+def calculate_direction(dx, dy):
+    if dx > 0 and dy > 0:
+        return round(dx, 2), round(dy, 2), round(math.degrees(math.atan(dy/dx)), 2)
+    elif dx < 0 and dy > 0:
+        return round(dx, 2), round(dy, 2), round(90 + (math.degrees(math.atan(dy/dx)) + 90),2)
+    elif dx < 0 and dy < 0:
+        return round(dx, 2), round(dy, 2), round(180 + math.degrees(math.atan(dy/dx)), 2)
+    elif dx > 0 and dy < 0:
+        return round(dx, 2), round(dy, 2), round(270 + (math.degrees(math.atan(dy/dx)) + 90),2)
+    elif dx == 0 and dy == 0:
+        return round(dx, 2), round(dy, 2), 0
+    elif dx == 0 and dy > 0:
+        return round(dx, 2), round(dy, 2), 90
+    elif dx < 0 and dy == 0:
+        return round(dx, 2), round(dy, 2), 180
+    elif dx == 0 and dy < 0:
+        return round(dx, 2), round(dy, 2), 270
+
 
 @app.agent(ballPositionTopic)
 async def process(positions):
@@ -37,7 +55,7 @@ async def process(positions):
         if dx != 0:
             direction_deg = round(math.degrees(math.atan(dy/dx)), 2)
 
-        await ballSpeedAndDirectionTopic.send(value={"time": position["time"], "velocity": velocity_m_per_s, "direction": direction_deg})
+        await ballSpeedAndDirectionTopic.send(value={"time": position["time"], "velocity": velocity_m_per_s, "direction": calculate_direction(dx, dy)})
 
         last_position = position
 
