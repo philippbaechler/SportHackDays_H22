@@ -93,3 +93,9 @@ bin/streamsets cli -U http://localhost:18630 manager stop -n Test55284d1b-15b1-4
 ```
 
 
+### Start Video from Comandline
+
+```
+vlc --zoom=0.5 --start-time=190 --stop-time=210 /tmp/output.mp4
+```
+
