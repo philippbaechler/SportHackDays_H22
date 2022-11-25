@@ -37,7 +37,7 @@ async def process(positions):
         if dx != 0:
             direction_deg = round(math.degrees(math.atan(dy/dx)), 2)
 
-        await ballSpeedAndDirectionTopic.send(value={"time": position["time"], "velocity": velocity_m_per_s, "dircetion": direction_deg})
+        await ballSpeedAndDirectionTopic.send(value={"time": position["time"], "velocity": velocity_m_per_s, "direction": direction_deg})
 
         last_position = position
 
