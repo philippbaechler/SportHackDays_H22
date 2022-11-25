@@ -19,21 +19,21 @@ last_position = {
 
 def calculate_direction(dx, dy):
     if dx > 0 and dy > 0:
-        return round(dx, 2), round(dy, 2), round(math.degrees(math.atan(dy/dx)), 2)
+        return round(math.degrees(math.atan(dy/dx)), 2)
     elif dx < 0 and dy > 0:
-        return round(dx, 2), round(dy, 2), round(90 + (math.degrees(math.atan(dy/dx)) + 90),2)
+        return round(90 + (math.degrees(math.atan(dy/dx)) + 90),2)
     elif dx < 0 and dy < 0:
-        return round(dx, 2), round(dy, 2), round(180 + math.degrees(math.atan(dy/dx)), 2)
+        return round(180 + math.degrees(math.atan(dy/dx)), 2)
     elif dx > 0 and dy < 0:
-        return round(dx, 2), round(dy, 2), round(270 + (math.degrees(math.atan(dy/dx)) + 90),2)
+        return round(270 + (math.degrees(math.atan(dy/dx)) + 90),2)
     elif dx == 0 and dy == 0:
-        return round(dx, 2), round(dy, 2), 0
+        return 0
     elif dx == 0 and dy > 0:
-        return round(dx, 2), round(dy, 2), 90
+        return 90
     elif dx < 0 and dy == 0:
-        return round(dx, 2), round(dy, 2), 180
+        return 180
     elif dx == 0 and dy < 0:
-        return round(dx, 2), round(dy, 2), 270
+        return 270
 
 
 @app.agent(ballPositionTopic)
