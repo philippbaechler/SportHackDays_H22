@@ -1,1 +1,1 @@
-docker exec --workdir /opt/streamsets-datacollector-3.22.2/ streamsets-1 bin/streamsets cli -U http://localhost:18630 manager stop -n Test55284d1b-15b1-4ed1-ad03-3097232af022
+docker exec --workdir /opt/streamsets-datacollector-3.22.2/ streamsets-1 bin/streamsets cli -U http://localhost:18630 manager stop -n Testea4e144e-02af-4a16-b0c4-64a008dfc14d
