@@ -28,9 +28,9 @@ def get_field_players(all_teams):
     field_players_0 = all_teams["team_0"]
     field_players_1 = all_teams["team_1"]
     if "30" in field_players_0:
-        field_players_0.remove("30")
+        del field_players_0["30"]
     if "67" in field_players_1:
-        field_players_1.remove("67")
+        del field_players_1["67"]
     return field_players_0, field_players_1
 
 
