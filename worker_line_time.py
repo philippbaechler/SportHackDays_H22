@@ -26,8 +26,16 @@ line_names = ["Line 1", "Line 2", "Line 3"]
 # initialize global variable
 last_players_team_0 = []
 last_players_team_1 = []
-last_line_team_0 = 0
-last_line_team_1 = 0
+last_line_team_0 = -1
+last_line_team_1 = -1
+last_line_time_team_0 = None
+last_line_time_team_1 = None
+t0_last_line_chg = None
+t0_current_line_time = None
+t1_last_line_chg = None
+t1_current_line_time = None
+current_timestamp = None
+
 
 # define function
 def get_line_weights(current_players, lines, goalkeeper):
@@ -35,71 +43,110 @@ def get_line_weights(current_players, lines, goalkeeper):
     current_players = np.array(current_players)
     current_players = current_players[current_players != goalkeeper]
     for line in lines:
-        line_weights.append(np.sum([1 for player in current_players if player in line])/len(current_players))
+        line_weights.append(np.sum([1 for player in current_players if player in line]) / len(current_players))
     return line_weights
+
 
 # kafka stuff
 @app.agent(playerPositionGroupedByTimeTopic)  # function executes when changes in topic
 async def process(message):  # all data topic -> message
 
     # set global variable
-    global last_line_team_0, last_line_team_1, last_players_team_0, last_players_team_1
+    global last_line_team_0, last_line_team_1, last_players_team_0, last_players_team_1, last_line_time_team_0, last_line_time_team_1
+    global t0_last_line_chg, t0_current_line_time, t1_last_line_chg, t1_current_line_time, current_timestamp
 
-    for idx, msg in enumerate(message):    
+    async for msg in message:
         eventExists = False
-        msg_json = json.loads(msg.value)
-        
+        msg_json = msg
+
         current_players_team_0 = [int(x) for x in list(msg_json["teams"]["team_0"].keys())]
         current_players_team_1 = [int(x) for x in list(msg_json["teams"]["team_1"].keys())]
 
-    # Filter out junk data
+        """ Preprocessing """
+        # Filter out junk data
         if msg_json["time"] == 0 or len(current_players_team_0) < 6 or len(current_players_team_1) < 6:
             continue
-            
-        # Player joins field
+        # Initialize line change timestamp
+        current_timestamp = datetime.strptime(msg_json["time"], '%Y-%m-%d %H:%M:%S.%f%z')
+        if t0_last_line_chg == None or t1_last_line_chg == None:
+            t0_last_line_chg = current_timestamp
+            t1_last_line_chg = current_timestamp
+
+        """ Player changed """
+        # New player
         for player in current_players_team_0:
             if player not in last_players_team_0:
-                print(msg_json["time"], "Player", player, " has joined Team 0", msg.offset)
+                # print(current_timestamp, "Player", player, " has joined Team 0", consumer_record.offset)
                 eventExists = True
         for player in current_players_team_1:
             if player not in last_players_team_1:
-                print(msg_json["time"], "Player", player, " has joined Team 1", msg.offset)    
+                # print(current_timestamp, "Player", player, " has joined Team 1", consumer_record.offset)
                 eventExists = True
-
-        # Player leaves field
+        # Player has left the field
         for player in last_players_team_0:
             if player not in current_players_team_0:
-                print(msg_json["time"], "Player", player, " has left Team 0", msg.offset)
+                # print(current_timestamp, "Player", player, " has left Team 0", consumer_record.offset)
                 eventExists = True
         for player in last_players_team_1:
             if player not in current_players_team_1:
-                print(msg_json["time"], "Player", player, " has left Team 1", msg.offset)
+                # print(current_timestamp, "Player", player, " has left Team 1", consumer_record.offset)
                 eventExists = True
 
+        """ Line detection """
         # Line detection
-        current_line_weights_team_0 = get_line_weights(current_players=current_players_team_0, 
-                                                        lines=t0_lines, goalkeeper=t0_goalkeeper)
-        current_line_weights_team_1 = get_line_weights(current_players=current_players_team_1, 
-                                                        lines=t1_lines, goalkeeper=t1_goalkeeper)
+        current_line_weights_team_0 = get_line_weights(current_players=current_players_team_0, lines=t0_lines,
+                                                       goalkeeper=t0_goalkeeper)
+        current_line_weights_team_1 = get_line_weights(current_players=current_players_team_1, lines=t1_lines,
+                                                       goalkeeper=t1_goalkeeper)
+
         current_line_team_0 = np.argmax(current_line_weights_team_0)
-        current_line_team_1 = np.argmax(current_line_weights_team_1)   
+        current_line_team_1 = np.argmax(current_line_weights_team_1)
+
+        t0_current_line_time = (current_timestamp - t0_last_line_chg).seconds
+        t1_current_line_time = (current_timestamp - t1_last_line_chg).seconds
+
+        # Line change team 0
         if current_line_team_0 != last_line_team_0:
-            print(msg_json["time"], "Team 0 has switched from", line_names[last_line_team_0], "to", line_names[current_line_team_0], msg.offset)
+            #print(current_timestamp, "Team 0 has switched from", line_names[last_line_team_0], "to", line_names[current_line_team_0], consumer_record.offset)
+            t0_last_line_chg = current_timestamp
             eventExists = True
+        # Line change team 1
         if current_line_team_1 != last_line_team_1:
-            print(msg_json["time"], "Team 1 has switched from", line_names[last_line_team_1], "to", line_names[current_line_team_1], msg.offset)
-            eventExists = True        
-        
+            #print(current_timestamp, "Team 1 has switched from", line_names[last_line_team_1], "to", line_names[current_line_team_1], consumer_record.offset)
+            t1_last_line_chg = current_timestamp
+            eventExists = True
+
+        if last_line_time_team_0 != t0_current_line_time or last_line_time_team_1 != t1_current_line_time:
+            eventExists = True
+
         if eventExists:
-            print("Players Team 0:", sorted(current_players_team_0))
-            print("Players Team 1:", sorted(current_players_team_1))
+            #print("Players Team 0:", sorted(current_players_team_0), ", line time:", t0_current_line_time)
+            #print("Players Team 1:", sorted(current_players_team_1), ", line time:", t1_current_line_time)
+            # Prepare JSON message
+            response_msg= {}
+            response_team_0 = {}
+            response_team_1 = {}
+            response_msg["time"] = str(current_timestamp)
+            response_team_0["players"] = sorted(current_players_team_0)
+            response_team_0["line"] = line_names[last_line_team_0]
+            response_team_0["current_line_time"] = t0_current_line_time
+            response_team_1["players"] = sorted(current_players_team_1)
+            response_team_1["line"] = line_names[last_line_team_1]
+            response_team_1["current_line_time"] = t1_current_line_time
+            response_msg["team_0"] = response_team_0
+            response_msg["team_1"] = response_team_1
+            print(response_msg)
+            #await ShowLineTimeTopic.send(value=json.dumps(response_msg))
+            await ShowLineTimeTopic.send(value=response_msg)
 
         # Set variables for next iteration
         last_players_team_0 = current_players_team_0
         last_players_team_1 = current_players_team_1
         last_line_team_0 = current_line_team_0
         last_line_team_1 = current_line_team_1
+        last_line_time_team_0 = t0_current_line_time
+        last_line_time_team_1 = t1_current_line_time
+        
 
-        await ShowLineTimeTopic.send(value={'time': msg_json['time']})
 
 app.main()
