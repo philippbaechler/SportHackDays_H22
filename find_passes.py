@@ -23,16 +23,14 @@ async def process(messages):
                 await passCollectionTopic.send(value={
                     "time": message["time"],
                     "team": message["team"],
-                    "from_player": {
-                        "number": last_player_in_possession["player_number"],
-                        "x": round(last_player_in_possession["position"]["x"], 2),
-                        "y": round(last_player_in_possession["position"]["y"], 2)
-                        },
-                    "to_player": {
-                        "number": message["player_number"],
-                        "x": round(message["position"]["x"], 2),
-                        "y": round(message["position"]["y"], 2)
-                        }
+                    "from_player": last_player_in_possession["player_number"],
+                    "from_x": round(last_player_in_possession["position"]["x"], 2),
+                    "from_y": round(last_player_in_possession["position"]["y"], 2),
+                    "to_player": message["player_number"],
+                    "to_x": round(message["position"]["x"], 2),
+                    "to_y": round(message["position"]["y"], 2),
+                    "d_x": round(message["position"]["x"]-last_player_in_possession["position"]["x"], 2),
+                    "d_y": round(message["position"]["y"]-last_player_in_possession["position"]["y"], 2)
                 })
 
 
