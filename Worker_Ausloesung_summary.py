@@ -44,7 +44,7 @@ async def main_func(stream):
             Ball_position_1 = 1
         else:
             Ball_position_1 = 0
-        await AusloesungSummaryTopic.send(value={'time': box['time'], 'team_0': {'COG': COG_0,
+        await AusloesungSummaryTopic.send(value={'time': streams['time'], 'team_0': {'COG': COG_0,
                                                                             'Ball_position': Ball_position_0},
                                                                 'team_1': {'COG': COG_1,
                                                                             'Ball_position': Ball_position_1}})
