@@ -66,19 +66,25 @@ async def process(positions):
             if shortest_distance["distance"] < 2:
                 if current_player_in_possession != {"team": shortest_distance["team"], "player_number": shortest_distance["player_number"]}:
                     if current_player_in_possession != {}:
-                        new_message={"team": current_player_in_possession["team"], 
+                        new_message={
+                                 "time": position["time"],
+                                 "team": current_player_in_possession["team"], 
                                  "player_number": current_player_in_possession["player_number"],
                                  "possesion": False,
                                  "position": {"x": current_ball_position["x"], "y": current_ball_position["y"]}}
                         await ballPossessionTopic.send(value=new_message)
                     current_player_in_possession = {"team": shortest_distance["team"], "player_number": shortest_distance["player_number"]}
-                    new_message={"team": current_player_in_possession["team"], 
+                    new_message={
+                                 "time": position["time"],
+                                 "team": current_player_in_possession["team"], 
                                  "player_number": current_player_in_possession["player_number"],
                                  "possesion": True,
                                  "position": {"x": current_ball_position["x"], "y": current_ball_position["y"]}}
                     await ballPossessionTopic.send(value=new_message)
             elif current_player_in_possession != {}:
-                new_message={"team": current_player_in_possession["team"], 
+                new_message={    
+                             "time": position["time"],
+                             "team": current_player_in_possession["team"], 
                              "player_number": current_player_in_possession["player_number"],
                              "possesion": False,
                              "position": {"x": current_ball_position["x"], "y": current_ball_position["y"]}}
