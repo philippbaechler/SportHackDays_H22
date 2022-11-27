@@ -4,7 +4,7 @@ kafka_brokers = ['86.119.35.55:9092']
 
 app = faust.App(
     "Ausloesung-app",
-    broker="kafka_brokers")
+    broker=kafka_brokers)
 
 #input topics
 centerOfGravityTopic = app.topic("centerOfGravity")
