@@ -9,7 +9,7 @@ app = faust.App(
 #input topics
 centerOfGravityTopic = app.topic("centerOfGravity")
 filteredInputBallTopic = app.topic("filteredInputBallTopic")
-ballPossessionTopic = app.topic("ballPossession")
+passCollectionTopic = app.topic("passCollection")
 #output topic
 AusloesungSummaryTopic = app.topic("AusloesungSummary")
 
@@ -31,15 +31,15 @@ async def helper_func(stream):
         else:
             COG_1 = 0
 
-@app.agent(ballPossessionTopic)
+@app.agent(passCollectionTopic)
 async def helper_func(stream):
     global Ball_possession_0, Ball_possession_1
     async for streams in stream:
-        if streams['team'] == 0 and ['possession'] == 'True':
+        if streams['team'] == 0:
             Ball_possession_0 = 1
         else:
             Ball_possession_0 = 0
-        if streams['team'] == 1 and ['possession'] == 'True':
+        if streams['team'] == 1:
             Ball_possession_1 = 1
         else:
             Ball_possession_1 = 0

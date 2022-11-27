@@ -11,11 +11,11 @@ AusloesungTopic = app.topic('AusloesungTopic')
 @app.agent(AusloesungSummaryTopic)
 async def process(summaries):
     async for summary in summaries:
-        if summary['team_0']['COG'] == 1 and summary['team_0']['Ball_position'] == 1:
+        if summary['team_0']['COG'] == 1 and summary['team_0']['Ball_possession'] == 1 and summary['team_0']['Ball_position'] == 1:
             auslösung_0 = 'YES'
         else:
             auslösung_0 = "NO"
-        if summary['team_1']['COG'] == 1  and summary['team_1']['Ball_position'] == 1:
+        if summary['team_1']['COG'] == 1 and summary['team_1']['Ball_possession'] == 1 and summary['team_1']['Ball_position'] == 1:
             auslösung_1 = 'YES'
         else:
             auslösung_1 = "NO"
@@ -23,7 +23,3 @@ async def process(summaries):
                                                 'team_1': {'Auslösung': auslösung_1}})
 
 app.main()
-
-
-#and summary['team_0']['Ball_possession'] == 1
-#and summary['team_1']['Ball_possession'] == 1
