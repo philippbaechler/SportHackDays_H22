@@ -37,8 +37,8 @@ t1_current_line_time = None
 current_timestamp = None
 t0_total_line_game_time = [0, 0, 0]
 t1_total_line_game_time = [0, 0, 0]
-t0_current_line_game_time = None
-t1_current_line_game_time = None
+t0_current_line_game_time = 0
+t1_current_line_game_time = 0
 
 
 # define function
@@ -127,6 +127,7 @@ async def process(message):  # message is data from topis playerPositionGroupedB
             t1_current_line_game_time = 0
             eventExists = True
 
+        # execute when min. 1 second has passed
         if last_line_time_team_0 != t0_current_line_time or last_line_time_team_1 != t1_current_line_time:
             t0_total_line_game_time[current_line_team_0] += 1
             t1_total_line_game_time[current_line_team_1] += 1
@@ -153,7 +154,6 @@ async def process(message):  # message is data from topis playerPositionGroupedB
             response_msg["team_0"] = response_team_0
             response_msg["team_1"] = response_team_1
             print(response_msg)
-            #await ShowLineTimeTopic.send(value=json.dumps(response_msg))
             await ShowLineTimeTopic.send(value=response_msg)
 
         # Set variables for next iteration
