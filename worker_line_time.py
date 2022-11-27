@@ -35,6 +35,10 @@ t0_current_line_time = None
 t1_last_line_chg = None
 t1_current_line_time = None
 current_timestamp = None
+t0_total_line_game_time = [0, 0, 0]
+t1_total_line_game_time = [0, 0, 0]
+t0_current_line_game_time = None
+t1_current_line_game_time = None
 
 
 # define function
@@ -49,12 +53,14 @@ def get_line_weights(current_players, lines, goalkeeper):
 
 # kafka stuff
 @app.agent(playerPositionGroupedByTimeTopic)  # function executes when changes in topic
-async def process(message):  # all data topic -> message
+async def process(message):  # message is data from topis playerPositionGroupedByTime
 
-    # set global variable
+    # set global variable (to store them out of the function)
     global last_line_team_0, last_line_team_1, last_players_team_0, last_players_team_1, last_line_time_team_0, last_line_time_team_1
-    global t0_last_line_chg, t0_current_line_time, t1_last_line_chg, t1_current_line_time, current_timestamp
+    global t0_last_line_chg, t0_current_line_time, t1_last_line_chg, t1_current_line_time, current_timestamp, t0_total_line_game_time, t1_total_line_game_time
+    global t0_current_line_game_time, t1_current_line_game_time
 
+    # anync needed because of faust
     async for msg in message:
         eventExists = False
         msg_json = msg
@@ -66,6 +72,7 @@ async def process(message):  # all data topic -> message
         # Filter out junk data
         if msg_json["time"] == 0 or len(current_players_team_0) < 6 or len(current_players_team_1) < 6:
             continue
+
         # Initialize line change timestamp
         current_timestamp = datetime.strptime(msg_json["time"], '%Y-%m-%d %H:%M:%S.%f%z')
         if t0_last_line_chg == None or t1_last_line_chg == None:
@@ -82,6 +89,7 @@ async def process(message):  # all data topic -> message
             if player not in last_players_team_1:
                 # print(current_timestamp, "Player", player, " has joined Team 1", consumer_record.offset)
                 eventExists = True
+
         # Player has left the field
         for player in last_players_team_0:
             if player not in current_players_team_0:
@@ -109,14 +117,21 @@ async def process(message):  # all data topic -> message
         if current_line_team_0 != last_line_team_0:
             #print(current_timestamp, "Team 0 has switched from", line_names[last_line_team_0], "to", line_names[current_line_team_0], consumer_record.offset)
             t0_last_line_chg = current_timestamp
+            t0_current_line_game_time = 0
             eventExists = True
+
         # Line change team 1
         if current_line_team_1 != last_line_team_1:
             #print(current_timestamp, "Team 1 has switched from", line_names[last_line_team_1], "to", line_names[current_line_team_1], consumer_record.offset)
             t1_last_line_chg = current_timestamp
+            t1_current_line_game_time = 0
             eventExists = True
 
         if last_line_time_team_0 != t0_current_line_time or last_line_time_team_1 != t1_current_line_time:
+            t0_total_line_game_time[current_line_team_0] += 1
+            t1_total_line_game_time[current_line_team_1] += 1
+            t0_current_line_game_time += 1
+            t1_current_line_game_time += 1
             eventExists = True
 
         if eventExists:
@@ -129,10 +144,12 @@ async def process(message):  # all data topic -> message
             response_msg["time"] = str(current_timestamp)
             response_team_0["players"] = sorted(current_players_team_0)
             response_team_0["line"] = line_names[last_line_team_0]
-            response_team_0["current_line_time"] = t0_current_line_time
+            response_team_0["current_line_time"] = t0_current_line_game_time
+            response_team_0["total_line_game_time"] = t0_total_line_game_time
             response_team_1["players"] = sorted(current_players_team_1)
             response_team_1["line"] = line_names[last_line_team_1]
-            response_team_1["current_line_time"] = t1_current_line_time
+            response_team_1["current_line_time"] = t1_current_line_game_time
+            response_team_1["total_line_game_time"] = t1_total_line_game_time
             response_msg["team_0"] = response_team_0
             response_msg["team_1"] = response_team_1
             print(response_msg)
@@ -145,8 +162,7 @@ async def process(message):  # all data topic -> message
         last_line_team_0 = current_line_team_0
         last_line_team_1 = current_line_team_1
         last_line_time_team_0 = t0_current_line_time
-        last_line_time_team_1 = t1_current_line_time
-        
+        last_line_time_team_1 = t1_current_line_time        
 
 
 app.main()
