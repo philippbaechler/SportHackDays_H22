@@ -20,6 +20,8 @@ WORKER_7="find_ball_possession.py"
 WORKER_7_ARGUMENTS="$WORKER_7 worker -l info --web-port=6072"
 WORKER_8="find_passes.py"
 WORKER_8_ARGUMENTS="$WORKER_8 worker -l info --web-port=6073"
+WORKER_9="worker_line_time.py"
+WORKER_9_ARGUMENTS="$WORKER_9 worker -l info --web-port=6074"
 
 
 if [[ $# -gt 0 ]]; then
@@ -37,6 +39,7 @@ if [ ! -e "$OUTPUT_PID_PATH/$OUTPUT_PID_FILE" ]; then
     "$PYTHON_EXE" ./$WORKER_6_ARGUMENTS & echo $! >> "$OUTPUT_PID_PATH/$OUTPUT_PID_FILE"
     "$PYTHON_EXE" ./$WORKER_7_ARGUMENTS & echo $! >> "$OUTPUT_PID_PATH/$OUTPUT_PID_FILE"
     "$PYTHON_EXE" ./$WORKER_8_ARGUMENTS & echo $! >> "$OUTPUT_PID_PATH/$OUTPUT_PID_FILE"
+    "$PYTHON_EXE" ./$WORKER_9_ARGUMENTS & echo $! >> "$OUTPUT_PID_PATH/$OUTPUT_PID_FILE"
     
 else
     echo "Stopping all python workers!"
@@ -49,6 +52,7 @@ else
     kill $(pgrep -f $WORKER_6)
     kill $(pgrep -f $WORKER_7)
     kill $(pgrep -f $WORKER_8)
+    kill $(pgrep -f $WORKER_9)
 
     rm "$OUTPUT_PID_PATH/$OUTPUT_PID_FILE"
 fi
