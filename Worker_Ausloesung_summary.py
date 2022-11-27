@@ -22,11 +22,11 @@ Ball_possession_1 = 0
 async def helper_func(stream):
     global COG_0, COG_1
     async for streams in stream:
-        if streams['teams']['team_0']['x'] >= 0:
+        if streams['teams']['team_0']['x'] <= 0:
             COG_0 = 1
         else:
             COG_0 = 0
-        if streams['teams']['team_1']['x'] <= 0:
+        if streams['teams']['team_1']['x'] >= 0:
             COG_1 = 1
         else:
             COG_1 = 0
@@ -46,16 +46,18 @@ async def helper_func(stream):
 
 @app.agent(filteredInputBallTopic)
 async def main_func(stream):
-    global COG_0, COG_1
+#    global COG_0, COG_1
     async for streams in stream:
-        if -0.5 <= streams['x'] <= 0.5:
-            Ball_position_0 = 1
-        else:
-            Ball_position_0 = 0
-        if -0.5 <= streams['x'] <= 0.5:
-            Ball_position_1 = 1
-        else:
-            Ball_position_1 = 0
+        Ball_position_0 = 1
+        Ball_position_1 = 1
+#        if -0.5 <= streams['x'] <= 0.5:
+#            Ball_position_0 = 1
+#        else:
+#            Ball_position_0 = 0
+#        if -0.5 <= streams['x'] <= 0.5:
+#            Ball_position_1 = 1
+#        else:
+#            Ball_position_1 = 0
         await AusloesungSummaryTopic.send(value={'time': streams['time'], 'team_0': {'COG': COG_0,
                                                                             'Ball_position': Ball_position_0,
                                                                             'Ball_possession': Ball_possession_0},
